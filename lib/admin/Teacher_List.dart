@@ -1,14 +1,18 @@
 class TeacherList {
   final String className;
-  final int numberOfTeachers;
+  final int numberOfStudents;
   final String image;
   final String groupimg;
+  final String Class;
 
   TeacherList({
     required this.className,
-    required this.numberOfTeachers,
+    required this.numberOfStudents,
     required this.image,
     required this.groupimg,
+    required this.Class,
+    required String fullName,
+    required String phoneNumber,
   });
 }
 
@@ -16,23 +20,40 @@ class TeacherData {
   static List<TeacherList> teachers = [
     TeacherList(
       className: 'teacher 1',
-      numberOfTeachers: 20,
-      image: 'assets/pana.png',
+      numberOfStudents: 20,
+      image: 'assets/9.jpg',
       groupimg: 'assets/Group.png',
+      Class: 'class A',
+      fullName: '',
+      phoneNumber: '',
     ),
     TeacherList(
       className: 'teacher 2',
-      numberOfTeachers: 18,
-      image: 'assets/cuate.png',
+      numberOfStudents: 18,
+      image: 'assets/10.jpg',
       groupimg: 'assets/Group.png',
+      Class: 'class A',
+      fullName: '',
+      phoneNumber: '',
     ),
     TeacherList(
       className: 'teacher 3',
-      numberOfTeachers: 25,
-      image: 'assets/cuatee.png',
+      numberOfStudents: 25,
+      image: 'assets/11.jpg',
       groupimg: 'assets/Group.png',
+      Class: 'class A',
+      fullName: '',
+      phoneNumber: '',
     ),
-
+    TeacherList(
+      className: 'teacher 3',
+      numberOfStudents: 25,
+      image: 'assets/1.jpg',
+      groupimg: 'assets/Group.png',
+      Class: 'class A',
+      fullName: '',
+      phoneNumber: '',
+    ),
     // Add more teachers as needed
   ];
 }

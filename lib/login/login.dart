@@ -1,9 +1,8 @@
-import 'package:assil_app/login/navbar_roots.dart';
-import 'package:assil_app/login/navbar_rootsProf.dart';
-import 'package:assil_app/login/signup.dart';
-import 'package:assil_app/teacher/teacher.dart';
 import 'package:flutter/material.dart';
 import 'authentication.dart';
+import 'navbar_roots.dart';
+import 'navbar_rootsProf.dart';
+import 'signup.dart';
 import 'forget_password.dart';
 
 class SignIn extends StatefulWidget {
@@ -17,11 +16,46 @@ class _SignInState extends State<SignIn> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool obscureText = true;
+  final Authentication _auth = Authentication();
 
   void togglePasswordVisibility() {
     setState(() {
       obscureText = !obscureText;
     });
+  }
+
+  void handleSignIn() async {
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    Map<String, dynamic> result = await _auth.login(email, password);
+
+    print("Response from backend: $result");
+
+    if (result.containsKey('error')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['error'])),
+      );
+    } else {
+      String role = result['role'];
+      print("User role: $role");  // Vérifier le rôle
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NavBarRoots(userEmail: email)),
+        );
+      } else if (role == 'teacher') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NavBarRootsProf(userEmail: email)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unknown role')),
+        );
+      }
+    }
   }
 
   @override
@@ -138,37 +172,7 @@ class _SignInState extends State<SignIn> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: ElevatedButton(
-        onPressed: () async {
-          String email = emailController.text;
-          String password = passwordController.text;
-
-          bool isAuthenticated =
-              StaticAuthentication.authenticateTeacher(email, password);
-
-          if (isAuthenticated) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => NavBarRootsProf()));
-          } else if (StaticAuthentication.authenticateAdmin(email, password)) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => NavBarRoots()));
-          } else {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Error'),
-                  content: Text('Wrong email or password.'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        },
+        onPressed: handleSignIn,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF40B7D5), // Change color to #40B7D5
           shape: RoundedRectangleBorder(

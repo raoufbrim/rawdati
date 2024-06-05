@@ -1,88 +1,89 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class AddClass extends StatefulWidget {
   const AddClass({Key? key}) : super(key: key);
 
   @override
-  _Home2State createState() => _Home2State();
+  _AddClassState createState() => _AddClassState();
 }
 
-class _Home2State extends State<AddClass> {
+class _AddClassState extends State<AddClass> {
   String? _selectedTeacher;
-  File? _selectedImage;
-  final picker = ImagePicker();
-  List<File> _imageList = [];
+  final TextEditingController _nameController = TextEditingController();
+  Map<String, int> _teachers = {};
 
-  Future getImageGallery() async {
-    final pickerFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickerFile != null) {
+  @override
+  void initState() {
+    super.initState();
+    _fetchTeachers();
+  }
+
+  Future<void> _fetchTeachers() async {
+    final response = await http.get(Uri.parse('http://192.168.170.164:8000/teachers/'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
       setState(() {
-        _imageList.add(File(pickerFile.path));
-        _selectedImage = File(pickerFile.path);
+        _teachers = {for (var teacher in data) teacher['email']: teacher['id']};
       });
     } else {
-      print('no image selected');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load teachers')),
+      );
     }
   }
 
-  Future getImageCamera() async {
-    final pickerFile = await picker.pickImage(source: ImageSource.camera);
-    if (pickerFile != null) {
-      setState(() {
-        _imageList.add(File(pickerFile.path));
-        _selectedImage = File(pickerFile.path);
-      });
-    } else {
-      print('no image selected');
-    }
+ Future<void> _submitForm() async {
+  if (_nameController.text.isEmpty || _selectedTeacher == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Veuillez remplir tous les champs')),
+    );
+    return;
   }
 
-  void dialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-          content: Container(
-            height: 120,
-            child: Column(
-              children: [
-                InkWell(
-                  onTap: () {
-                    getImageGallery();
-                    Navigator.pop(context);
-                  },
-                  child: ListTile(
-                    leading: Icon(Icons.photo_library),
-                    title: Text("Gallery"),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    getImageCamera();
-                    Navigator.pop(context);
-                  },
-                  child: ListTile(
-                    leading: Icon(Icons.camera),
-                    title: Text("Camera"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+  final int teacherId = _teachers[_selectedTeacher]!;
+
+  final response = await http.post(
+    Uri.parse('http://192.168.170.164:8000/classes/'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, dynamic>{
+      'name': _nameController.text,
+      'teacher_id': teacherId,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Classe ajoutée avec succès')),
+    );
+  } else if (response.statusCode == 400) {
+    final Map<String, dynamic> errorResponse = jsonDecode(response.body);
+    if (errorResponse['detail'] == 'Class name already exists') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Le nom de la classe existe déjà, veuillez en choisir un autre')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: ${response.body}')),
+      );
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur: ${response.body}')),
     );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add class'),
+        title: Text('Ajouter une classe'),
       ),
       body: Container(
         padding: const EdgeInsets.all(16.0),
@@ -91,11 +92,12 @@ class _Home2State extends State<AddClass> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Name of class',
+              'Nom de la classe',
               style: TextStyle(fontSize: 18.0),
             ),
             SizedBox(height: 8.0),
             TextField(
+              controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Nom de la classe',
                 border: OutlineInputBorder(),
@@ -103,21 +105,17 @@ class _Home2State extends State<AddClass> {
             ),
             SizedBox(height: 16.0),
             Text(
-              'Teacher',
+              'Professeur',
               style: TextStyle(fontSize: 18.0),
             ),
             SizedBox(height: 8.0),
             DropdownButtonFormField<String>(
               value: _selectedTeacher,
               hint: Text('Choisissez un professeur'),
-              items: [
-                'Professeur 1',
-                'Professeur 2',
-                'Professeur 3',
-              ].map((String value) {
+              items: _teachers.keys.map((String email) {
                 return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
+                  value: email,
+                  child: Text(email),
                 );
               }).toList(),
               onChanged: (value) {
@@ -129,44 +127,13 @@ class _Home2State extends State<AddClass> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
-            InkWell(
-              onTap: () {
-                dialog(context);
-              },
-              child: Container(
-                height: 100,
-                width: 200,
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 237, 234, 234),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: _selectedImage != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          _selectedImage!,
-                          width: 300,
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : Icon(
-                        Icons.camera_alt,
-                        color:
-                            const Color(0xFF40B7D5), // Change color to #40B7D5
-                        size: 50,
-                      ),
-              ),
-            ),
             SizedBox(height: 30.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color(0xFF40B7D5), // Change color to #40B7D5
+                  backgroundColor: const Color(0xFF40B7D5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),

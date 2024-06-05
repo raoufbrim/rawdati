@@ -7,23 +7,29 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NavBarRoots extends StatefulWidget {
-  const NavBarRoots({super.key});
+  final String userEmail;
+
+  const NavBarRoots({super.key, required this.userEmail});
 
   @override
   State<NavBarRoots> createState() => _NavBarRootsState();
 }
 
 class _NavBarRootsState extends State<NavBarRoots> {
-  @override
   int _selectedIndex = 0;
-  int index = 0;
 
-  final _screens = [
-    HomeScreen(),
-    AllClass(),
-    AddStudent(),
-    ProfilTech(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(userEmail: widget.userEmail), // Passer l'adresse e-mail ici
+      AllClass(),
+      AddStudent(),
+      ProfilTech(userEmail: widget.userEmail), // Passer l'adresse e-mail ici
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,19 +47,19 @@ class _NavBarRootsState extends State<NavBarRoots> {
           items: [
             Icon(
               Icons.home,
-              color: const Color(0xFF40B7D5), // Change color to #40B7D5
+              color: const Color(0xFF40B7D5),
             ),
             Icon(
               Icons.school,
-              color: const Color(0xFF40B7D5), // Change color to #40B7D5
+              color: const Color(0xFF40B7D5),
             ),
             Icon(
               Icons.perm_contact_calendar_sharp,
-              color: const Color(0xFF40B7D5), // Change color to #40B7D5
+              color: const Color(0xFF40B7D5),
             ),
             Icon(
               Icons.person,
-              color: const Color(0xFF40B7D5), // Change color to #40B7D5
+              color: const Color(0xFF40B7D5),
             ),
           ]),
     );

@@ -1,15 +1,28 @@
+import 'package:flutter/material.dart';
 import 'package:assil_app/admin/AddClass.dart';
 import 'package:assil_app/admin/Class_List.dart';
-import 'package:flutter/material.dart';
 
-class AllClass extends StatelessWidget {
+class AllClass extends StatefulWidget {
   const AllClass({Key? key}) : super(key: key);
+
+  @override
+  _AllClassState createState() => _AllClassState();
+}
+
+class _AllClassState extends State<AllClass> {
+  List<ClassList> classesList = ClassData.classes.toList();
+
+  void deleteClass(int index) {
+    setState(() {
+      classesList.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('class'),
+        title: Text('Classes'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -32,7 +45,7 @@ class AllClass extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'All class',
+                  'All classes',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -42,15 +55,44 @@ class AllClass extends StatelessWidget {
             ),
             ListView.builder(
               shrinkWrap: true,
-              itemCount: ClassData.classes.length, // Number of classes
+              itemCount: classesList.length,
               itemBuilder: (context, index) {
-                final classData = ClassData.classes[index];
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ClassItem(
-                    className: classData.className,
-                    numberOfStudents: classData.numberOfStudents,
-                    image: classData.image,
+                final classData = classesList[index];
+                return GestureDetector(
+                  onLongPress: () {
+                    // Show confirmation dialog before deletion
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("Confirm Deletion"),
+                        content:
+                            Text("Are you sure you want to delete this class?"),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Delete the class from the list
+                              deleteClass(index);
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text("Delete"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ClassItem(
+                      className: classData.className,
+                      numberOfStudents: classData.numberOfStudents,
+                      image: classData.image,
+                    ),
                   ),
                 );
               },
@@ -98,17 +140,16 @@ class ClassItem extends StatelessWidget {
         padding: EdgeInsets.all(10),
         child: Row(
           children: [
-            // Column for the class icon
+            // Container for class icon
             Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFF40B7D5), // Corrected typo here
+                color: const Color(0xFF40B7D5),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Image.asset(image, fit: BoxFit.cover),
             ),
-
             SizedBox(width: 20),
             // Column for class details
             Expanded(
@@ -142,7 +183,7 @@ class ClassItem extends StatelessWidget {
                 ],
               ),
             ),
-            // Smaller column for the ">" icon
+            // Icon for navigation
             Column(
               children: [
                 Icon(Icons.chevron_right, size: 24),

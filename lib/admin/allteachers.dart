@@ -1,11 +1,22 @@
-import 'package:assil_app/admin/AddClass.dart';
+import 'package:flutter/material.dart';
 import 'package:assil_app/admin/AddTeacher.dart';
 import 'package:assil_app/admin/Teacher_List.dart';
-import 'package:assil_app/admin/allteachers.dart';
-import 'package:flutter/material.dart';
 
-class allteachers extends StatelessWidget {
+class allteachers extends StatefulWidget {
   const allteachers({Key? key}) : super(key: key);
+
+  @override
+  _allteachersState createState() => _allteachersState();
+}
+
+class _allteachersState extends State<allteachers> {
+  List<TeacherList> teachersList = TeacherData.teachers.toList();
+
+  void deleteTeacher(int index) {
+    setState(() {
+      teachersList.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +55,44 @@ class allteachers extends StatelessWidget {
             ),
             ListView.builder(
               shrinkWrap: true,
-              itemCount:
-                  TeacherData.teachers.length, // Updated to use TeacherData
+              itemCount: teachersList.length,
               itemBuilder: (context, index) {
-                final teacher = TeacherData
-                    .teachers[index]; // Access teacher from TeacherData
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TeacherItem(
-                    className: teacher.className,
-                    numberOfTeachers: teacher.numberOfTeachers,
-                    image: teacher.image,
+                final teacher = teachersList[index];
+                return GestureDetector(
+                  onLongPress: () {
+                    // Show confirmation dialog before deletion
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("Confirm Deletion"),
+                        content: Text(
+                            "Are you sure you want to delete this teacher?"),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Delete the teacher from the list
+                              deleteTeacher(index);
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                            child: Text("Delete"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TeacherItem(
+                      className: teacher.className,
+                      numberOfTeachers: teacher.numberOfStudents,
+                      image: teacher.image,
+                    ),
                   ),
                 );
               },

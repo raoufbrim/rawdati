@@ -5,22 +5,29 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class NavBarRootsProf extends StatefulWidget {
-  const NavBarRootsProf({super.key});
+  final String userEmail;
+
+  const NavBarRootsProf({super.key, required this.userEmail});
 
   @override
   State<NavBarRootsProf> createState() => _NavBarRootsProfState();
 }
 
 class _NavBarRootsProfState extends State<NavBarRootsProf> {
-  @override
   int _selectedIndex = 0;
   int index = 0;
 
-  final _screens = [
-    HomeTeacher(),
-    form(),
-    ProfilTech(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeTeacher(teacherEmail: widget.userEmail),
+      form(),
+      ProfilTech(userEmail: widget.userEmail), // Passer l'adresse e-mail ici
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

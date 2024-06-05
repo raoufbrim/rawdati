@@ -1,67 +1,75 @@
-class Student {
-  final String name;
-  final String familyName;
+class Students {
+  final String fullname;
   final String imagePath;
-  final String currentYear;
+  final String Class;
   final int percentage; // Progress percentage
   final String dateOfBirth;
   final String mobileNumber;
 
-  Student({
-    required this.name,
-    required this.familyName,
+  Students({
+    required this.fullname,
     required this.imagePath,
-    required this.currentYear,
+    required this.Class,
     required this.percentage,
     required this.dateOfBirth,
     required this.mobileNumber,
+    required String className,
   });
 }
 
-List<Student> students = [
-  Student(
-    name: 'John',
-    familyName: 'Doe',
+List<Students> students = [
+  Students(
+    fullname: 'John Doe',
     imagePath: 'assets/john.png',
-    currentYear: '3AP',
+    Class: 'class A',
     percentage: 10,
     dateOfBirth: '01/01/2000',
     mobileNumber: '1234567890',
+    className: '',
   ),
-  Student(
-    name: 'Anna',
-    familyName: 'Smith',
+  Students(
+    fullname: 'Anna Smith',
     imagePath: 'assets/anna.png',
-    currentYear: '2AP',
+    Class: 'class A',
     percentage: 60,
     dateOfBirth: '02/02/2001',
     mobileNumber: '0987654321',
+    className: '',
   ),
-  Student(
-    name: 'Alice',
-    familyName: 'Johnson',
+  Students(
+    fullname: 'Alice Johnson',
     imagePath: 'assets/alice.png',
-    currentYear: '1AP',
+    Class: 'class B',
     percentage: 20,
     dateOfBirth: '03/03/2002',
     mobileNumber: '4561237890',
+    className: '',
   ),
-  Student(
-    name: 'Kim',
-    familyName: 'Nakamoto',
+  Students(
+    fullname: 'Kim Nakamoto',
     imagePath: 'assets/kim.png',
-    currentYear: '4AP',
+    Class: 'class J',
     percentage: 10,
     dateOfBirth: '04/04/2003',
     mobileNumber: '7890123456',
+    className: '',
   ),
-  Student(
-    name: 'ramdane',
-    familyName: 'chennibe',
+  Students(
+    fullname: 'ramdane Chennib',
     imagePath: 'assets/kim.png',
-    currentYear: '4AP',
+    Class: 'class H',
     percentage: 50,
     dateOfBirth: '04/04/2003',
     mobileNumber: '7890123456',
+    className: '',
+  ),
+  Students(
+    fullname: 'John Doe',
+    imagePath: 'assets/john.png',
+    Class: 'class B',
+    percentage: 10,
+    dateOfBirth: '01/01/2000',
+    mobileNumber: '1234567890',
+    className: '',
   ),
 ];

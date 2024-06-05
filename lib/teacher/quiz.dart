@@ -109,7 +109,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Future<void>  submitAnswers(BuildContext context) async {
-  var url = Uri.parse('http://192.168.45.164:8000/predict');
+  var url = Uri.parse('http://192.168.170.164:8000/predict');
   try {
 
     int age = selectedAnswers[1] != null ? int.parse(selectedAnswers[1]!) : 0;  // Utilisez une valeur par défaut ou gérez l'erreur
@@ -140,76 +140,59 @@ class _QuizPageState extends State<QuizPage> {
       'timide': selectedAnswers[21] == 'Oui',
       'evite_interactions_sociales': selectedAnswers[22] == 'Oui',
       'prefere_etre_seul': selectedAnswers[23] == 'Oui',
-      'nombre_freres_soeurs': siblings // Remplacer par l'indice correct
+      'nombre_freres_soeurs': siblings 
     }));
-     void showRecommendationDialog(BuildContext context, String recommendation) {
-        List<String> recommendationList = recommendation.split(',');
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Recommandations'),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: recommendationList.map((rec) => Text("• $rec")).toList(),
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Ferme la boîte de dialogue
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      }
+    
 
     if (response.statusCode == 200) {
-  var result = json.decode(response.body);
+      var result = json.decode(response.body);
+      String recommendations = result['recommendation'];
 
-  // Première boîte de dialogue pour résultat et maladie
-  showDialog(
-    context: context,
-    barrierDismissible: false,  // L'utilisateur doit cliquer sur un bouton pour fermer la boîte de dialogue
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Résultat du formulaire'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text('Résultat: ${result['result']}'),
-              Text('Trouble: ${result['maladie']}'),
+      // Afficher directement les recommandations
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Recommandations pour l\'enseignement'),
+            content: SingleChildScrollView(
+              child: Text(recommendations)
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Ferme la boîte de dialogue
+                },
+              ),
             ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Voir les recommandations'),
-            onPressed: () {
-              Navigator.of(context).pop(); // Ferme la première boîte de dialogue
-              showRecommendationDialog(context, result['recommendation']); // Montre les recommandations
-            },
-          ),
-          TextButton(
-            child: Text('Fermer'),
-            onPressed: () {
-              Navigator.of(context).pop(); // Ferme la boîte de dialogue
-            },
-          ),
-        ],
+          );
+        },
       );
-    },
-  );
-} else {
-  throw Exception('Failed to load data from API');
-}
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Erreur'),
+            content: SingleChildScrollView(
+              child: Text('Erreur de réponse de l\'API: ${response.statusCode}')
+            ),
+          );
+        }
+      );
+    }
   } catch (e) {
-    // Gérer les erreurs de connexion ou les exceptions ici
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Erreur'),
+          content: SingleChildScrollView(
+            child: Text('Erreur lors de la connexion à l\'API: $e')
+          ),
+        );
+      }
+    );
   }
 }
 

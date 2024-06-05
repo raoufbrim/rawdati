@@ -8,7 +8,7 @@ class form extends StatelessWidget {
       backgroundColor:
           Color.fromARGB(255, 174, 239, 255), // Blue background color
       appBar: AppBar(
-        title: Text('Form Page'),
+        title: Text('Formulaire Page'),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -1,21 +1,52 @@
-class StaticAuthentication {
-  // Hardcoded user data
-  static const List<Map<String, String>> _teachers = [
-    {'email': 'teacher1@gmail.com', 'password': 'teacher1'},
-    {'email': 'teacher2@gmail.com', 'password': 'teacher2'},
-    // Add more teachers as needed
-  ];
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-  static const Map<String, String> _admins = {'admin': 'admin'};
+class Authentication {
+  static const String baseUrl = 'http://192.168.170.164:8000'; // URL de votre backend
 
-  // Authentication method for teachers
-  static bool authenticateTeacher(String email, String password) {
-    return _teachers.any((teacher) =>
-        teacher['email'] == email && teacher['password'] == password);
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userEmail', email);
+      return jsonDecode(response.body);
+    } else {
+      return {'error': 'Invalid email or password'};
+    }
   }
 
-  // Authentication method for admins
-  static bool authenticateAdmin(String email, String password) {
-    return _admins.containsKey(email) && _admins[email] == password;
+  Future<Map<String, dynamic>> signup(String firstName, String lastName, String username, String email, String password, String phoneNumber, String role) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'first_name': firstName,
+        'last_name': lastName,
+        'username': username,
+        'email': email,
+        'password': password,
+        'phone_number': phoneNumber,
+        'role': role,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {'error': 'Registration failed'};
+    }
   }
 }
