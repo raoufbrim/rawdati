@@ -7,6 +7,8 @@ import 'package:assil_app/admin/profileetudient.dart';
 import 'package:assil_app/teacher/student_service.dart';
 import 'package:assil_app/teacher/student.dart';
 import 'package:assil_app/admin/profiletech.dart';
+import 'package:assil_app/admin/teacher_service.dart';
+import 'package:assil_app/admin/enseignant.dart';
 import 'Class_List.dart';
 import 'Teacher_List.dart';
 
@@ -34,16 +36,31 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-            _buildHorizontalListView(
-              "Teachers",
-              TeacherData.teachers.length,
-              (BuildContext context, int index) =>
-                  TeacherCategory(index: index, userEmail: userEmail),
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => allteachers()),
-                );
+            FutureBuilder<List<Teacher>>(
+              future: TeacherService.fetchAllTeachers(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No teachers found.'));
+                } else {
+                  return _buildHorizontalListView(
+                    "Teachers",
+                    snapshot.data!.length,
+                    (BuildContext context, int index) => TeacherCard(
+                      teacher: snapshot.data![index],
+                    ),
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AllTeachers()),
+                      );
+                    },
+                    snapshot,
+                  );
+                }
               },
             ),
             FutureBuilder<List<Student>>(
@@ -132,7 +149,7 @@ class HomeScreen extends StatelessWidget {
     int itemCount,
     Widget Function(BuildContext, int) itemBuilder,
     VoidCallback seeAllCallback,
-    [AsyncSnapshot<List<Student>>? snapshot]
+    [AsyncSnapshot<dynamic>? snapshot]
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,13 +176,21 @@ class HomeScreen extends StatelessWidget {
               if (snapshot != null && snapshot.hasData) {
                 return InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ProfileEtudiant(student: snapshot.data![index]),
-                      ),
-                    );
+                    if (snapshot.data![index] is Student) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileEtudiant(student: snapshot.data![index]),
+                        ),
+                      );
+                    } else if (snapshot.data![index] is Teacher) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfilTech(userEmail: (snapshot.data![index] as Teacher).email),
+                        ),
+                      );
+                    }
                   },
                   child: itemBuilder(context, index),
                 );
@@ -224,8 +249,11 @@ class ClassCategory extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.asset(
-                      myClass.image,
+                      myClass.image ?? 'assets/default_image.png',
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset('assets/default_image.png');
+                      },
                     ),
                   ),
                 ),
@@ -235,7 +263,7 @@ class ClassCategory extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        myClass.className,
+                        myClass.className ?? 'Unknown Class',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -246,7 +274,10 @@ class ClassCategory extends StatelessWidget {
                       Row(
                         children: [
                           Image.asset(
-                            myClass.groupimg,
+                            myClass.groupimg ?? 'assets/default_group.png',
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.error);
+                            },
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -270,16 +301,16 @@ class ClassCategory extends StatelessWidget {
   }
 }
 
-class TeacherCategory extends StatelessWidget {
-  final int index;
-  final String userEmail;
+class TeacherCard extends StatelessWidget {
+  final Teacher teacher;
 
-  const TeacherCategory({Key? key, required this.index, required this.userEmail})
-      : super(key: key);
+  const TeacherCard({Key? key, required this.teacher}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final teacher = TeacherData.teachers[index];
+    String fullName = (teacher.firstName.isNotEmpty ? teacher.firstName : '') + ' ' + (teacher.lastName.isNotEmpty ? teacher.lastName : '');
+    print('Teacher: ${teacher.firstName}, ${teacher.lastName}, ${teacher.profilePicture}');
+
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Material(
@@ -290,7 +321,7 @@ class TeacherCategory extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProfilTech(userEmail: userEmail),
+                builder: (context) => ProfilTech(userEmail: teacher.email),
               ),
             );
           },
@@ -315,10 +346,15 @@ class TeacherCategory extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      teacher.image,
-                      fit: BoxFit.cover,
-                    ),
+                    child: teacher.profilePicture.isNotEmpty
+                        ? Image.network(
+                            teacher.profilePicture,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            'assets/default_avatar.png',
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 Padding(
@@ -327,30 +363,13 @@ class TeacherCategory extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        teacher.className,
-                        style: const TextStyle(
+                        fullName.isNotEmpty ? fullName : 'Unknown Teacher',
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                      ),
-                      Row(
-                        children: [
-                          Image.asset(
-                            teacher.groupimg,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.error),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${teacher.numberOfStudents} Student${teacher.numberOfStudents != 1 ? 's' : ''}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -423,13 +442,21 @@ class StudentCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        student.fullName,
+                        student.fullName ?? 'Unknown Student',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Year: ' + student.schoolYear,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),

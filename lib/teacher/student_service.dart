@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'student.dart';
 
 class StudentService {
-  static const String apiUrl = 'http://192.168.170.164:8000'; // Replace with your actual backend URL
+  static const String apiUrl = 'http://192.168.1.44:8000'; // Replace with your actual backend URL
 
   // Function to fetch all students
   static Future<List<Student>> fetchAllStudents() async {

@@ -109,7 +109,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Future<void>  submitAnswers(BuildContext context) async {
-  var url = Uri.parse('http://192.168.170.164:8000/predict');
+  var url = Uri.parse('http://192.168.1.44:8000/predict');
   try {
 
     int age = selectedAnswers[1] != null ? int.parse(selectedAnswers[1]!) : 0;  // Utilisez une valeur par défaut ou gérez l'erreur

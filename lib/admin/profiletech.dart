@@ -13,12 +13,13 @@ class ProfilTech extends StatefulWidget {
 
 class _ProfilTechState extends State<ProfilTech> {
   late Future<User> user;
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _userNameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneNumberController;
+  TextEditingController? _firstNameController;
+  TextEditingController? _lastNameController;
+  TextEditingController? _userNameController;
+  TextEditingController? _emailController;
+  TextEditingController? _phoneNumberController;
   bool _isLoading = false;
+  int? _userId; // Add a variable to store the user ID
 
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _ProfilTechState extends State<ProfilTech> {
   }
 
   Future<User> fetchUserProfile(String email) async {
-    final response = await http.get(Uri.parse('http://192.168.170.164:8000/user/profile?email=$email'));
+    final response = await http.get(Uri.parse('http://192.168.1.44:8000/user/profile?email=$email'));
 
     if (response.statusCode == 200) {
       User user = User.fromJson(jsonDecode(response.body));
@@ -36,28 +37,36 @@ class _ProfilTechState extends State<ProfilTech> {
       _userNameController = TextEditingController(text: user.user_name ?? 'N/A');
       _emailController = TextEditingController(text: user.email);
       _phoneNumberController = TextEditingController(text: user.phone_number);
+      _userId = user.id; // Store the user ID
       return user;
     } else {
       throw Exception('Failed to load user profile');
     }
   }
 
-  Future<void> _updateUser(int userId) async {
+  Future<void> _updateUser(int? userId) async {
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User ID is null')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     final response = await http.put(
-      Uri.parse('http://192.168.170.164:8000/users/$userId'),
+      Uri.parse('http://192.168.1.44:8000/users/$userId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
-        'first_name': _firstNameController.text,
-        'last_name': _lastNameController.text,
-        'user_name': _userNameController.text,
-        'email': _emailController.text,
-        'phone_number': _phoneNumberController.text,
+        'first_name': _firstNameController?.text,
+        'last_name': _lastNameController?.text,
+        'user_name': _userNameController?.text,
+        'email': _emailController?.text,
+        'phone_number': _phoneNumberController?.text,
       }),
     );
 
@@ -133,9 +142,7 @@ class _ProfilTechState extends State<ProfilTech> {
                           ),
                           child: TextButton(
                             onPressed: () {
-                              if (snapshot.hasData) {
-                                _updateUser(snapshot.data!.id!); // Use the nullable operator !
-                              }
+                              _updateUser(_userId);
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white,
@@ -157,7 +164,7 @@ class _ProfilTechState extends State<ProfilTech> {
     );
   }
 
-  Widget buildEditableProfileRow(String label, TextEditingController controller) {
+  Widget buildEditableProfileRow(String label, TextEditingController? controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -182,7 +189,7 @@ class _ProfilTechState extends State<ProfilTech> {
 }
 
 class User {
-  final int? id; // Change this to nullable
+  final int id; // Make this non-nullable
   final String first_name;
   final String last_name;
   final String? user_name;
@@ -191,7 +198,7 @@ class User {
   final String? profile_picture;
 
   User({
-    this.id, // Make this nullable
+    required this.id,
     required this.first_name,
     required this.last_name,
     this.user_name,
@@ -202,7 +209,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] != null ? json['id'] as int : null, // Ensure id is nullable
+      id: json['id'], // Ensure id is non-nullable
       first_name: json['first_name'],
       last_name: json['last_name'],
       user_name: json['user_name'] ?? 'N/A',

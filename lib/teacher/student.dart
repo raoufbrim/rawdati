@@ -17,15 +17,15 @@ class Student {
     required this.classId,
   });
 
-  factory Student.fromJson(Map<String, dynamic> json) {
+    factory Student.fromJson(Map<String, dynamic> json) {
     return Student(
-      id: json['id'],
-      fullName: json['full_name'],
-      dateOfBirth: json['date_of_birth'],
-      schoolYear: json['school_year'],
-      parentPhoneNumber: json['parent_phone_number'],
-      profilePicture: json['profile_picture'],
-      classId: json['class_id'],
+      id: json['id'] ?? 0,
+      fullName: json['full_name'] ?? 'Unknown',
+      dateOfBirth: json['date_of_birth'] ?? 'Unknown',
+      schoolYear: json['school_year'] ?? 'Unknown',
+      parentPhoneNumber: json['parent_phone_number'] ?? 'Unknown',
+      profilePicture: json['profile_picture'] ?? 'assets/default_avatar.png',
+      classId: json['class_id'] ?? 0,
     );
   }
 }

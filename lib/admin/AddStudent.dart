@@ -68,7 +68,7 @@ class _AddStudentState extends State<AddStudent> {
     final String profilePicturePath = localImage.path; // Chemin de l'image locale
     final int classId = _classId!;
 
-    final url = Uri.parse('http://192.168.170.164:8000/students/');
+    final url = Uri.parse('http://192.168.1.44:8000/students/');
     final response = await http.post(
       url,
       headers: <String, String>{

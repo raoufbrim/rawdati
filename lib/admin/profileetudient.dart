@@ -31,7 +31,7 @@ class _ProfileEtudiantState extends State<ProfileEtudiant> {
 
   Future<void> _updateStudent() async {
     final response = await http.put(
-      Uri.parse('http://192.168.170.164:8000/students/${widget.student.id}'),
+      Uri.parse('http://192.168.1.44:8000/students/${widget.student.id}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
