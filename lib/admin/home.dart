@@ -9,6 +9,8 @@ import 'package:assil_app/teacher/student.dart';
 import 'package:assil_app/admin/profiletech.dart';
 import 'package:assil_app/admin/teacher_service.dart';
 import 'package:assil_app/admin/enseignant.dart';
+import 'package:assil_app/admin/class_service.dart';
+import 'package:assil_app/admin/class.dart';
 import 'Class_List.dart';
 import 'Teacher_List.dart';
 
@@ -25,15 +27,29 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildBlueSpace(),
-            _buildHorizontalListView(
-              "Class Category",
-              ClassData.classes.length,
-              (BuildContext context, int index) => ClassCategory(index: index),
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AllClass()),
-                );
+            FutureBuilder<List<Class>>(
+              future: ClassService.fetchAllClasses(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No classes found.'));
+                } else {
+                  return _buildHorizontalListView(
+                    "Class Category",
+                    snapshot.data!.length,
+                    (BuildContext context, int index) => ClassCard(classData: snapshot.data![index]),
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AllClass()),
+                      );
+                    },
+                    snapshot,
+                  );
+                }
               },
             ),
             FutureBuilder<List<Teacher>>(
@@ -205,16 +221,15 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class ClassCategory extends StatelessWidget {
-  final int index;
+class ClassCard extends StatelessWidget {
+  final Class classData;
 
-  const ClassCategory({Key? key, required this.index}) : super(key: key);
+  const ClassCard({Key? key, required this.classData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final myClass = ClassData.classes[index];
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(10),
       child: Material(
         elevation: 8,
         borderRadius: BorderRadius.circular(10),
@@ -223,13 +238,13 @@ class ClassCategory extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ClassDetailsPage(classDetails: myClass),
+                builder: (context) => ClassDetailsPage(classDetails: classData),
               ),
             );
           },
           child: Container(
             width: 200,
-            height: 300,
+            height: 200,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: Colors.white,
@@ -249,11 +264,8 @@ class ClassCategory extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.asset(
-                      myClass.image ?? 'assets/default_image.png',
+                      'assets/default_image.png',
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset('assets/default_image.png');
-                      },
                     ),
                   ),
                 ),
@@ -263,7 +275,7 @@ class ClassCategory extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        myClass.className ?? 'Unknown Class',
+                        classData.name,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -273,15 +285,9 @@ class ClassCategory extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Image.asset(
-                            myClass.groupimg ?? 'assets/default_group.png',
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.error);
-                            },
-                          ),
                           const SizedBox(width: 8),
                           Text(
-                            '${myClass.numberOfStudents} Student${myClass.numberOfStudents != 1 ? 's' : ''}',
+                            '${classData.students.length} Student${classData.students.length != 1 ? 's' : ''}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,

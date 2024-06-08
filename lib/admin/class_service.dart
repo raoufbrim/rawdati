@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'class.dart';
+import 'package:assil_app/admin/class.dart';
 
 class ClassService {
   static const String apiUrl = 'http://192.168.1.44:8000/classes/';

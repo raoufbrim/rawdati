@@ -1,5 +1,6 @@
 import 'package:assil_app/teacher/student.dart';
 import 'package:assil_app/admin/enseignant.dart';
+
 class Class {
   int id;
   String name;
@@ -14,14 +15,14 @@ class Class {
   });
 
   factory Class.fromJson(Map<String, dynamic> json) {
-    var teacherJson = json['teacher'] as Map<String, dynamic>;
-    var studentsJson = json['students'] as List;
-    
+    var teacherJson = json['teacher'] as Map<String, dynamic>? ?? {};
+    var studentsJson = json['students'] as List<dynamic>? ?? [];
+
     List<Student> studentsList = studentsJson.map((i) => Student.fromJson(i)).toList();
 
     return Class(
-      id: json['id'],
-      name: json['name'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
       teacher: Teacher.fromJson(teacherJson),
       students: studentsList,
     );

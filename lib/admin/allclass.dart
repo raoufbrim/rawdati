@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:assil_app/admin/AddClass.dart';
-import 'package:assil_app/admin/Class_List.dart';
+import 'package:assil_app/admin/class_service.dart';
+import 'package:assil_app/admin/class.dart';
 
 class AllClass extends StatefulWidget {
   const AllClass({Key? key}) : super(key: key);
@@ -10,11 +11,17 @@ class AllClass extends StatefulWidget {
 }
 
 class _AllClassState extends State<AllClass> {
-  List<ClassList> classesList = ClassData.classes.toList();
+  late Future<List<Class>> _classesList;
+
+  @override
+  void initState() {
+    super.initState();
+    _classesList = ClassService.fetchAllClasses();
+  }
 
   void deleteClass(int index) {
     setState(() {
-      classesList.removeAt(index);
+      _classesList.then((classes) => classes.removeAt(index));
     });
   }
 
@@ -24,81 +31,94 @@ class _AllClassState extends State<AllClass> {
       appBar: AppBar(
         title: Text('Classes'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search for class',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'All classes',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: classesList.length,
-              itemBuilder: (context, index) {
-                final classData = classesList[index];
-                return GestureDetector(
-                  onLongPress: () {
-                    // Show confirmation dialog before deletion
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text("Confirm Deletion"),
-                        content:
-                            Text("Are you sure you want to delete this class?"),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
-                            child: Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Delete the class from the list
-                              deleteClass(index);
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
-                            child: Text("Delete"),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  child: Padding(
+      body: FutureBuilder<List<Class>>(
+        future: _classesList,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No classes found.'));
+          } else {
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: ClassItem(
-                      className: classData.className,
-                      numberOfStudents: classData.numberOfStudents,
-                      image: classData.image,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search for class',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
                     ),
                   ),
-                );
-              },
-            ),
-          ],
-        ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'All classes',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final classData = snapshot.data![index];
+                      return GestureDetector(
+                        onLongPress: () {
+                          // Show confirmation dialog before deletion
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text("Confirm Deletion"),
+                              content:
+                                  Text("Are you sure you want to delete this class?"),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    // Delete the class from the list
+                                    deleteClass(index);
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text("Delete"),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: ClassItem(
+                            className: classData.name,
+                            numberOfStudents: classData.students.length,
+                            image: 'assets/default_image.png',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+        },
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.all(16.0),

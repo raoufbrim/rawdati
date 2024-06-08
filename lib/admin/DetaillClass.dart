@@ -1,20 +1,16 @@
-import 'package:assil_app/admin/allclass.dart';
-
 import 'package:flutter/material.dart';
-import '../teacher/StudentList.dart';
-import 'Class_List.dart'; // Import ClassList if not already imported
+import 'package:assil_app/admin/class.dart';
 
 class ClassDetailsPage extends StatelessWidget {
-  final ClassList classDetails;
+  final Class classDetails;
 
-  const ClassDetailsPage({Key? key, required this.classDetails})
-      : super(key: key);
+  const ClassDetailsPage({Key? key, required this.classDetails}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(classDetails.className),
+        title: Text(classDetails.name),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -32,62 +28,61 @@ class ClassDetailsPage extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ClassItem(
-                className: classDetails.className,
-                numberOfStudents: classDetails.numberOfStudents,
-                image: classDetails.image,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Teacher',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        classDetails.name,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Teacher: ${classDetails.teacher.firstName} ${classDetails.teacher.lastName}',
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Students:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      ...classDetails.students.map((student) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(student.profilePicture),
+                          ),
+                          title: Text(student.fullName),
+                          subtitle: Text('DOB: ${student.dateOfBirth}'),
+                        );
+                      }).toList(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            // Display list of teachers for the selected class
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: classDetails.teachers.length,
-              itemBuilder: (context, index) {
-                final teacher = classDetails.teachers[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: AssetImage(teacher.image),
-                  ),
-                  title: Text(teacher.className),
-                  subtitle:
-                      Text('Number of Students: ${teacher.numberOfStudents}'),
-                );
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Students',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            // Display list of students for the selected class
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: classDetails.students.length,
-              itemBuilder: (context, index) {
-                final student = classDetails.students[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: AssetImage(student.imagePath),
-                  ),
-                  title: Text(student.fullname),
-                  subtitle: Text('DOB: ${student.dateOfBirth}'),
-                );
-              },
             ),
           ],
         ),
