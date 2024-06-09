@@ -5,14 +5,12 @@ import 'package:assil_app/admin/allstudents.dart';
 import 'package:assil_app/admin/allteachers.dart';
 import 'package:assil_app/admin/profileetudient.dart';
 import 'package:assil_app/teacher/student_service.dart';
-import 'package:assil_app/teacher/student.dart';
+import 'package:assil_app/teacher/student.dart' as studentModel;
 import 'package:assil_app/admin/profiletech.dart';
 import 'package:assil_app/admin/teacher_service.dart';
-import 'package:assil_app/admin/enseignant.dart';
+import 'package:assil_app/admin/enseignant.dart' as teacherModel;
 import 'package:assil_app/admin/class_service.dart';
-import 'package:assil_app/admin/class.dart';
-import 'Class_List.dart';
-import 'Teacher_List.dart';
+import 'package:assil_app/admin/class.dart' as classModel;
 
 class HomeScreen extends StatelessWidget {
   final String userEmail;
@@ -27,7 +25,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildBlueSpace(),
-            FutureBuilder<List<Class>>(
+            FutureBuilder<List<classModel.Class>>(
               future: ClassService.fetchAllClasses(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -40,7 +38,7 @@ class HomeScreen extends StatelessWidget {
                   return _buildHorizontalListView(
                     "Class Category",
                     snapshot.data!.length,
-                    (BuildContext context, int index) => ClassCard(classData: snapshot.data![index]),
+                    (BuildContext context, int index) => ClassCategory(classData: snapshot.data![index]),
                     () {
                       Navigator.push(
                         context,
@@ -52,7 +50,7 @@ class HomeScreen extends StatelessWidget {
                 }
               },
             ),
-            FutureBuilder<List<Teacher>>(
+            FutureBuilder<List<teacherModel.Teacher>>(
               future: TeacherService.fetchAllTeachers(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -79,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                 }
               },
             ),
-            FutureBuilder<List<Student>>(
+            FutureBuilder<List<studentModel.Student>>(
               future: StudentService.fetchAllStudents(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -192,18 +190,25 @@ class HomeScreen extends StatelessWidget {
               if (snapshot != null && snapshot.hasData) {
                 return InkWell(
                   onTap: () {
-                    if (snapshot.data![index] is Student) {
+                    if (snapshot.data![index] is studentModel.Student) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ProfileEtudiant(student: snapshot.data![index]),
                         ),
                       );
-                    } else if (snapshot.data![index] is Teacher) {
+                    } else if (snapshot.data![index] is teacherModel.Teacher) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfilTech(userEmail: (snapshot.data![index] as Teacher).email),
+                          builder: (context) => ProfilTech(userEmail: (snapshot.data![index] as teacherModel.Teacher).email),
+                        ),
+                      );
+                    } else if (snapshot.data![index] is classModel.Class) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ClassDetailsPage(className: (snapshot.data![index] as classModel.Class).name),
                         ),
                       );
                     }
@@ -221,15 +226,15 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class ClassCard extends StatelessWidget {
-  final Class classData;
+class ClassCategory extends StatelessWidget {
+  final classModel.Class classData;
 
-  const ClassCard({Key? key, required this.classData}) : super(key: key);
+  const ClassCategory({Key? key, required this.classData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(8.0),
       child: Material(
         elevation: 8,
         borderRadius: BorderRadius.circular(10),
@@ -238,13 +243,13 @@ class ClassCard extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ClassDetailsPage(classDetails: classData),
+                builder: (context) => ClassDetailsPage(className: classData.name),
               ),
             );
           },
           child: Container(
             width: 200,
-            height: 200,
+            height: 300,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: Colors.white,
@@ -263,9 +268,12 @@ class ClassCard extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      'assets/default_image.png',
+                    child: Image.network(
+                      classData.teacher.profilePicture,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset('assets/default_image.png');
+                      },
                     ),
                   ),
                 ),
@@ -285,6 +293,7 @@ class ClassCard extends StatelessWidget {
                       ),
                       Row(
                         children: [
+                          Icon(Icons.group),
                           const SizedBox(width: 8),
                           Text(
                             '${classData.students.length} Student${classData.students.length != 1 ? 's' : ''}',
@@ -308,14 +317,13 @@ class ClassCard extends StatelessWidget {
 }
 
 class TeacherCard extends StatelessWidget {
-  final Teacher teacher;
+  final teacherModel.Teacher teacher;
 
   const TeacherCard({Key? key, required this.teacher}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String fullName = (teacher.firstName.isNotEmpty ? teacher.firstName : '') + ' ' + (teacher.lastName.isNotEmpty ? teacher.lastName : '');
-    print('Teacher: ${teacher.firstName}, ${teacher.lastName}, ${teacher.profilePicture}');
+    String fullName = '${teacher.firstName} ${teacher.lastName}';
 
     return Padding(
       padding: const EdgeInsets.all(10),
@@ -390,7 +398,7 @@ class TeacherCard extends StatelessWidget {
 }
 
 class StudentCard extends StatelessWidget {
-  final Student student;
+  final studentModel.Student student;
 
   const StudentCard({Key? key, required this.student}) : super(key: key);
 
