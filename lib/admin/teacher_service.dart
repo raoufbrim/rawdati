@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'enseignant.dart';
 
 class TeacherService {
-  static const String apiUrl = 'http://192.168.1.44:8000/teachers/';
+  static const String apiUrl = 'http://192.168.115.164:8000/teachers/';
 
   static Future<List<Teacher>> fetchAllTeachers() async {
     final response = await http.get(Uri.parse(apiUrl));

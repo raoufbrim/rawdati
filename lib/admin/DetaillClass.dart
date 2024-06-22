@@ -1,20 +1,58 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:assil_app/admin/class_service.dart';
 import 'package:assil_app/admin/class.dart';
-
-class ClassDetailsPage extends StatelessWidget {
+import 'package:flutter/services.dart' show rootBundle;
+import 'dart:convert';
+class ClassDetailsPage extends StatefulWidget {
   final String className;
 
   const ClassDetailsPage({Key? key, required this.className}) : super(key: key);
 
   @override
+  State<ClassDetailsPage> createState() => _ClassDetailsPageState();
+}
+
+class _ClassDetailsPageState extends State<ClassDetailsPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    loadStudentImages();
+  }
+
+
+  List<String> classImages = [];
+
+  Future<void> loadStudentImages() async {
+    final manifestContent = await rootBundle.loadString('AssetManifest.json');
+    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+    final imagePaths = manifestMap.keys
+        .where((String key) => key.startsWith('assets/etudiant/'))
+        .toList();
+    setState(() {
+      classImages = imagePaths;
+    });
+  }
+
+  String getRandomStudentImage() {
+    final random = Random();
+    if (classImages.isNotEmpty) {
+      final randomIndex = random.nextInt(classImages.length);
+      return classImages[randomIndex];
+    } else {
+      return 'assets/default_image.png';
+    }
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(className),
+        title: Text(widget.className),
       ),
       body: FutureBuilder<Class>(
-        future: ClassService.fetchClassDetails(className),
+        future: ClassService.fetchClassDetails(widget.className),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -68,7 +106,7 @@ class ClassDetailsPage extends StatelessWidget {
                             ),
                             SizedBox(height: 10),
                             Text(
-                              'Teacher: ${classDetails.teacher.username}',
+                              'Teacher: ${classDetails.teacher.first_name}',
                               style: TextStyle(
                                 fontSize: 18,
                               ),
@@ -85,7 +123,7 @@ class ClassDetailsPage extends StatelessWidget {
                             ...classDetails.students.map((student) {
                               return ListTile(
                                 leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(student.profilePicture),
+                                  backgroundImage: AssetImage(getRandomStudentImage()),
                                 ),
                                 title: Text(student.fullName),
                                 subtitle: Text('DOB: ${student.dateOfBirth}'),

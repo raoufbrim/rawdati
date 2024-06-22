@@ -73,6 +73,13 @@ class _SignInState extends State<SignIn> {
               "Sign In",
               style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
             ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                "assets/log.jpg",
+                fit: BoxFit.cover,
+              ),
+            ),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.015,
             ),

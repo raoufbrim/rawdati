@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:assil_app/teacher/student.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:math';
+import 'package:flutter/services.dart' show rootBundle;
 
 class ProfileEtudiant extends StatefulWidget {
   final Student student;
@@ -29,9 +31,32 @@ class _ProfileEtudiantState extends State<ProfileEtudiant> {
     _classIdController = TextEditingController(text: widget.student.classId.toString());
   }
 
+  Future<String> getRandomStudentImage() async {
+    try {
+      final manifestContent = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+      final imagePaths = manifestMap.keys
+          .where((String key) => key.startsWith('assets/etudiant/'))
+          .toList();
+
+      if (imagePaths.isEmpty) {
+        print('No images found in assets/etudiant/');
+        return ''; // Return an empty string if no images found
+      }
+
+      final random = Random();
+      final randomIndex = random.nextInt(imagePaths.length);
+      print('Random image selected: ${imagePaths[randomIndex]}');
+      return imagePaths[randomIndex];
+    } catch (e) {
+      print('Error loading image manifest: $e');
+      return ''; // Return an empty string in case of error
+    }
+  }
+
   Future<void> _updateStudent() async {
     final response = await http.put(
-      Uri.parse('http://192.168.1.44:8000/students/${widget.student.id}'),
+      Uri.parse('http://192.168.115.164:8000/students/${widget.student.id}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -84,11 +109,26 @@ class _ProfileEtudiantState extends State<ProfileEtudiant> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: widget.student.profilePicture != null
-                          ? NetworkImage(widget.student.profilePicture)
-                          : AssetImage('assets/default_avatar.png') as ImageProvider,
+                    FutureBuilder<String>(
+                      future: getRandomStudentImage(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Icon(Icons.error);
+                        } else {
+                          final randomImage = snapshot.data!;
+                          print('Displaying image: $randomImage');
+                          return CircleAvatar(
+                            radius: 50,
+                            backgroundImage: 
+                            // widget.student.profilePicture.isNotEmpty
+                            //     ? NetworkImage(widget.student.profilePicture)
+                            //     : 
+                                AssetImage(randomImage) as ImageProvider,
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),

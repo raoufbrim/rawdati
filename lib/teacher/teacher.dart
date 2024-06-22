@@ -3,6 +3,9 @@ import 'student_service.dart';
 import 'student.dart';
 import 'package:assil_app/admin/AddStudent.dart';
 import 'package:assil_app/admin/profileetudient.dart';
+import 'dart:math';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 class HomeTeacher extends StatefulWidget {
   final String teacherEmail;
@@ -20,6 +23,17 @@ class _HomeTeacherState extends State<HomeTeacher> {
   void initState() {
     super.initState();
     futureStudents = StudentService.fetchStudentsByTeacherEmail(widget.teacherEmail);
+  }
+
+  Future<String> getRandomStudentImage() async {
+    final manifestContent = await rootBundle.loadString('AssetManifest.json');
+    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+    final imagePaths = manifestMap.keys
+        .where((String key) => key.startsWith('assets/etudiant/'))
+        .toList();
+    final random = Random();
+    final randomIndex = random.nextInt(imagePaths.length);
+    return imagePaths[randomIndex];
   }
 
   @override
@@ -147,9 +161,26 @@ class _HomeTeacherState extends State<HomeTeacher> {
                                         height: 80,
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(10),
-                                          child: Image.network(
-                                            student.profilePicture,
-                                            fit: BoxFit.cover,
+                                          child: FutureBuilder<String>(
+                                            future: getRandomStudentImage(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                return CircularProgressIndicator();
+                                              } else if (snapshot.hasError) {
+                                                return Icon(Icons.error);
+                                              } else {
+                                                final randomImage = snapshot.data!;
+                                                return student.profilePicture.isNotEmpty
+                                                    ? Image.network(
+                                                        student.profilePicture,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (context, error, stackTrace) {
+                                                          return Image.asset(randomImage);
+                                                        },
+                                                      )
+                                                    : Image.asset(randomImage);
+                                              }
+                                            },
                                           ),
                                         ),
                                       ),

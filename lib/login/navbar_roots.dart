@@ -2,6 +2,7 @@ import 'package:assil_app/admin/AddStudent.dart';
 import 'package:assil_app/admin/allclass.dart';
 import 'package:assil_app/admin/home.dart';
 import 'package:assil_app/admin/profiletech.dart';
+import 'package:assil_app/admin/studentsick.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class _NavBarRootsState extends State<NavBarRoots> {
     _screens = [
       HomeScreen(userEmail: widget.userEmail), // Passer l'adresse e-mail ici
       AllClass(),
+      StudentSick(),
       AddStudent(),
       ProfilTech(userEmail: widget.userEmail), // Passer l'adresse e-mail ici
     ];
@@ -53,6 +55,10 @@ class _NavBarRootsState extends State<NavBarRoots> {
               Icons.school,
               color: const Color(0xFF40B7D5),
             ),
+            Icon(
+            Icons.sick,
+            color: const Color(0xFF40B7D5), // Change color to #40B7D5
+          ),
             Icon(
               Icons.perm_contact_calendar_sharp,
               color: const Color(0xFF40B7D5),

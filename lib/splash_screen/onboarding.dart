@@ -30,7 +30,7 @@ class _onboardState extends State<onboard> {
             bgColor: const Color(0xff1eb090),
           ),
           OnboardingPageModel(
-            title: 'Stay Connected, Stay Informed with AssilApp',
+            title: 'Stay Connected, Stay Informed with Rawdati',
             description: '',
             image: 'assets/page3.png',
             bgColor: const Color(0xfffeae4f),

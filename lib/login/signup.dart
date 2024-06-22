@@ -67,6 +67,13 @@ class _SignUpState extends State<SignUp> {
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.07,
             ),
+             ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                "assets/log2.jpg",
+                fit: BoxFit.cover,
+              ),
+            ),
             Form(
               child: Column(
                 children: [

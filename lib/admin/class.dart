@@ -6,41 +6,45 @@ class Class {
   String name;
   Teacher teacher;
   List<Student> students;
+  num ? studentCounts;
 
   Class({
     required this.id,
     required this.name,
     required this.teacher,
     required this.students,
+    this.studentCounts,
   });
 
   factory Class.fromJson(Map<String, dynamic> json) {
+    print(json['student_count']);
     var teacherJson = json['teacher'] as Map<String, dynamic>? ?? {};
     var studentsJson = json['students'] as List<dynamic>? ?? [];
 
     List<Student> studentsList = studentsJson.map((i) => Student.fromJson(i)).toList();
 
     return Class(
-      id: json['id'] != null ? json['id'] : 0, // Default to 0 if null
+      id: json['id'] ?? 0, // Default to 0 if null
       name: json['name'] ?? 'Unknown', // Default to 'Unknown' if null
       teacher: Teacher.fromJson(teacherJson),
       students: studentsList,
+      studentCounts: json['student_count']
     );
   }
 }
 
 class Teacher {
-  String username;
+  String first_name;
   String profilePicture;
 
   Teacher({
-    required this.username,
+    required this.first_name,
     required this.profilePicture,
   });
 
   factory Teacher.fromJson(Map<String, dynamic> json) {
     return Teacher(
-      username: json['username'] ?? 'Unknown', // Default to 'Unknown' if null
+      first_name: json['first_name'] ?? 'Unknown', // Default to 'Unknown' if null
       profilePicture: json['profile_picture'] ?? '', // Default to empty string if null
     );
   }

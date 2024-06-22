@@ -109,15 +109,17 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Future<void>  submitAnswers(BuildContext context) async {
-  var url = Uri.parse('http://192.168.1.44:8000/predict');
+  var url = Uri.parse('http://192.168.115.164:8000/predict');
   try {
 
+    String fullName = selectedAnswers[0] ?? ''; 
     int age = selectedAnswers[1] != null ? int.parse(selectedAnswers[1]!) : 0;  // Utilisez une valeur par défaut ou gérez l'erreur
     int siblings = selectedAnswers[2] != null ? int.parse(selectedAnswers[2]!) : 0;  // Idem pour le 
 
     var response = await http.post(url, headers: {
       'Content-Type': 'application/json; charset=UTF-8'
     }, body: json.encode({
+      'full_name': fullName,
       'age': age, 
       'sexe': selectedAnswers[3] == 'Garçon', 
       'vocabulaire_limite': selectedAnswers[4] == 'Oui',
@@ -296,7 +298,7 @@ class _QuizPageState extends State<QuizPage> {
                             child: TextField(
                               onChanged: (text) => selectAnswer(text, index),
                               decoration: InputDecoration(
-                                labelText: '   Your Answer',
+                                
                                 border:
                                     InputBorder.none, // Remove default border
                               ),

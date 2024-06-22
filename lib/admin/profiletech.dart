@@ -28,7 +28,7 @@ class _ProfilTechState extends State<ProfilTech> {
   }
 
   Future<User> fetchUserProfile(String email) async {
-    final response = await http.get(Uri.parse('http://192.168.1.44:8000/user/profile?email=$email'));
+    final response = await http.get(Uri.parse('http://192.168.115.164:8000/user/profile?email=$email'));
 
     if (response.statusCode == 200) {
       User user = User.fromJson(jsonDecode(response.body));
@@ -57,7 +57,7 @@ class _ProfilTechState extends State<ProfilTech> {
     });
 
     final response = await http.put(
-      Uri.parse('http://192.168.1.44:8000/users/$userId'),
+      Uri.parse('http://192.168.115.164:8000/users/$userId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

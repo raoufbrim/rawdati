@@ -21,7 +21,7 @@ class _AddClassState extends State<AddClass> {
   }
 
   Future<void> _fetchTeachers() async {
-    final response = await http.get(Uri.parse('http://192.168.1.44:8000/teachers/'));
+    final response = await http.get(Uri.parse('http://192.168.115.164:8000/teachers/'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -46,7 +46,7 @@ class _AddClassState extends State<AddClass> {
   final int teacherId = _teachers[_selectedTeacher]!;
 
   final response = await http.post(
-    Uri.parse('http://192.168.170.164:8000/classes/'),
+    Uri.parse('http://192.168.115.164:8000/classes/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
